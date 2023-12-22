@@ -399,6 +399,10 @@ class HTTPWriter(periodic.PeriodicService, TraceWriter):
             if raise_exc:
                 six.reraise(*sys.exc_info())
             else:
+                import traceback
+                traceback.print_exc()
+                print(client)
+                print(client.__dict__)
                 log.error(
                     "failed to send, dropping %d traces to intake at %s after %d retries",
                     n_traces,
@@ -578,6 +582,9 @@ class AgentWriter(HTTPWriter):
 
     def _send_payload(self, payload, count, client):
         # type: (...) -> Response
+        import traceback
+        traceback.print_stack()
+        raise Exception("shouldn't write to agent")
         response = super(AgentWriter, self)._send_payload(payload, count, client)
         if response.status in [404, 415]:
             log.debug("calling endpoint '%s' but received %s; downgrading API", client.ENDPOINT, response.status)
@@ -626,3 +633,10 @@ class AgentWriter(HTTPWriter):
         headers = super(AgentWriter, self)._get_finalized_headers(count, client)
         headers["X-Datadog-Trace-Count"] = str(count)
         return headers
+
+    def _write_with_client(self, client, spans=None):
+        import traceback
+        traceback.print_stack()
+        print(client)
+        print(client.__dict__)
+        raise Exception("shouldn't write to agent writer")
